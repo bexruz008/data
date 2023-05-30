@@ -3,7 +3,7 @@ import sqlite3
 
 class Database:
     def __init__(self):
-        self.connection = sqlite3.connect("p3.db")
+        self.connection = sqlite3.connect("python.db")
         self.cursor = self.connection.cursor()
         self.create_user()
 

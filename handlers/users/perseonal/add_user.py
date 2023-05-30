@@ -1,7 +1,5 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
-from aiogram.types import ReplyKeyboardRemove
 from loader import dp, bot, db
 from states.user_state import AddUserState
 import re
@@ -10,20 +8,22 @@ import re
 @dp.message_handler(state=AddUserState.name)
 async def add_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['name'] = message.text
+        NAME_REGEX = r"^[a-z0-9_-]{3,15}$"
+        name = re.match(NAME_REGEX, message.text)
+        if name:
+            data['name'] = message.text
 
-    await message.answer("Foydalanuvchini yoshini kiriting")
-    # await AddUserState.age.set()
-    await AddUserState.next()
-
+            await message.answer("Foydalanuvchini yoshini kiriting")
+            await AddUserState.next()
+        else:
+            await message.answer("Ismingiz Notug'ri \n Tug'irlab kiriting")
 
 @dp.message_handler(state=AddUserState.age)
 async def add_age(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['age'] = message.text
-
-    await AddUserState.next()
-    await message.answer("Foydalanuvchini raqamini kiriting")
+            data['age'] = message.text
+            await AddUserState.next()
+            await message.answer("Foydalanuvchini raqamini kiriting")
 
 
 @dp.message_handler(state=AddUserState.phone_number)
@@ -41,12 +41,16 @@ async def add_number(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=AddUserState.email)
-async def add_email(message: types.Message, state: FSMContext):
+async def add_email(message:types.Message,state:FSMContext):
     async with state.proxy() as data:
-        data['email'] = message.text
-
-    await AddUserState.next()
-    await message.answer("Foydalanuvchini rasmini kiriting")
+        EMAIL_REGEX = r"[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+"
+        email_user = re.match(EMAIL_REGEX, message.text)
+        if email_user:
+            data['email'] = message.text
+            await message.answer("Rasminizni kiriting ")
+            await AddUserState.next()
+        else:
+            await message.answer("Emailingizda xatolik bor \n Qayta tekshirib kiriting")
 
 
 @dp.message_handler(lambda message: not message.photo, state=AddUserState.photo)
